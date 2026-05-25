@@ -1,9 +1,11 @@
 package com.example.proyectofinaldms.ui.events
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -29,23 +31,35 @@ fun HomeScreen(
     onNotificationsClick: () -> Unit
 ) {
     val upcomingEvents by viewModel.filteredEvents.collectAsState()
-    val allEvents by viewModel.upcomingEvents.collectAsState()
-    val pastEvents by viewModel.pastEvents.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val unreadCount by viewModel.unreadCount.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(0) }
+    val allEvents      by viewModel.upcomingEvents.collectAsState()
+    val pastEvents     by viewModel.pastEvents.collectAsState()
+    val searchQuery    by viewModel.searchQuery.collectAsState()
+    val unreadCount    by viewModel.unreadCount.collectAsState()
+    var selectedTab    by remember { mutableIntStateOf(0) }
 
-    // Lista activa según tab seleccionada
     val activeEvents = when (selectedTab) {
-        0 -> if (searchQuery.isBlank()) allEvents else upcomingEvents
-        1 -> pastEvents
+        0    -> if (searchQuery.isBlank()) allEvents else upcomingEvents
+        1    -> pastEvents
         else -> allEvents
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Eventos Comunitarios") },
+                title = {
+                    Column {
+                        Text(
+                            "Eventos Comunitarios",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            "Descubre lo que pasa cerca",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = onNotificationsClick) {
                         BadgedBox(
@@ -62,18 +76,24 @@ fun HomeScreen(
                         Icon(Icons.Default.History, "Historial")
                     }
                     IconButton(onClick = onProfileClick) {
-                        Icon(Icons.Default.Person, "Perfil")
+                        Icon(Icons.Default.AccountCircle, "Perfil")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCreateEvent) {
-                Icon(Icons.Default.Add, "Crear evento")
-            }
+            ExtendedFloatingActionButton(
+                onClick = onCreateEvent,
+                icon = { Icon(Icons.Default.Add, null) },
+                text = { Text("Nuevo evento") },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         }
     ) { padding ->
         Column(
@@ -81,7 +101,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Buscador
+            // ─── Buscador ────────────────────────────────────────────────────
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
@@ -96,21 +116,38 @@ fun HomeScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                singleLine = true
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp)
             )
 
-            // Tabs Próximos / Pasados
-            TabRow(selectedTabIndex = selectedTab) {
+            // ─── Tabs ────────────────────────────────────────────────────────
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("Próximos (${allEvents.size})") }
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.EventAvailable, null, modifier = Modifier.size(15.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Próximos (${allEvents.size})")
+                        }
+                    }
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text("Pasados (${pastEvents.size})") }
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.History, null, modifier = Modifier.size(15.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Pasados (${pastEvents.size})")
+                        }
+                    }
                 )
             }
 
@@ -120,20 +157,29 @@ fun HomeScreen(
                         Icon(
                             Icons.Default.EventBusy,
                             null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            modifier = Modifier.size(72.dp),
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                         )
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(12.dp))
                         Text(
                             if (selectedTab == 0) "No hay eventos próximos" else "No hay eventos pasados",
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (selectedTab == 0) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "¡Crea el primero con el botón +!",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(activeEvents, key = { it.id }) { event ->
                         EventCard(event = event, onClick = { onEventClick(event.id) })
@@ -146,75 +192,150 @@ fun HomeScreen(
 
 @Composable
 fun EventCard(event: Event, onClick: () -> Unit) {
-    val sdf = remember { SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("es", "SV")) }
+    val sdf = remember { SimpleDateFormat("dd MMM yyyy  •  HH:mm", Locale("es", "SV")) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = event.title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            // Borde izquierdo de color
+            Box(
+                modifier = Modifier
+                    .width(5.dp)
+                    .fillMaxHeight()
+                    .background(
+                        if (event.isPast())
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                        else
+                            MaterialTheme.colorScheme.primary
+                    )
             )
-            Spacer(Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.CalendarToday,
-                    null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = sdf.format(event.date.toDate()),
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Spacer(Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.LocationOn,
-                    null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = event.location,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = event.description,
-                fontSize = 13.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(8.dp))
-            Row {
-                AssistChip(
-                    onClick = {},
-                    label = { Text("👥 ${event.attendeesCount}") }
-                )
-                if (event.ratingsCount > 0) {
-                    Spacer(Modifier.width(8.dp))
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text("⭐ %.1f".format(event.averageRating))
+
+            Column(modifier = Modifier.padding(14.dp)) {
+                // Título + rating badge
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = event.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (event.ratingsCount > 0) {
+                        Spacer(Modifier.width(8.dp))
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer
+                        ) {
+                            Text(
+                                "⭐ %.1f".format(event.averageRating),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
                         }
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                // Fecha
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CalendarToday,
+                        null,
+                        modifier = Modifier.size(13.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        text = sdf.format(event.date.toDate()),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                // Ubicación
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        null,
+                        modifier = Modifier.size(13.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        text = event.location,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                // Descripción
+                Text(
+                    text = event.description,
+                    fontSize = 13.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 18.sp
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                // Footer: asistentes + organizador
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Group,
+                                null,
+                                modifier = Modifier.size(13.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                "${event.attendeesCount} confirmados",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "por ${event.organizerName}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 160.dp)
                     )
                 }
             }

@@ -1,54 +1,59 @@
 package com.example.proyectofinaldms.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary            = Blue40,
+    onPrimary          = Color.White,
+    primaryContainer   = Blue90,
+    onPrimaryContainer = Blue10,
+    secondary          = Teal40,
+    onSecondary        = Color.White,
+    secondaryContainer = Teal90,
+    onSecondaryContainer = Blue10,
+    tertiary           = Amber40,
+    onTertiary         = Color.White,
+    background         = Grey99,
+    surface            = Grey99,
+    surfaceVariant     = Grey95,
+    onBackground       = Grey10,
+    onSurface          = Grey10,
+    onSurfaceVariant   = Grey20,
+    error              = Red40,
+    errorContainer     = Red90,
+    onError            = Color.White,
+    onErrorContainer   = Blue10,
+    outline            = Color(0xFFB0B8C1)
+)
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkColorScheme = darkColorScheme(
+    primary            = Blue80,
+    onPrimary          = Blue20,
+    primaryContainer   = Blue40,
+    onPrimaryContainer = Blue90,
+    secondary          = Teal80,
+    onSecondary        = Blue10,
+    tertiary           = Amber80,
+    background         = Grey10,
+    surface            = Grey10,
+    onBackground       = Grey90,
+    onSurface          = Grey90,
+    error              = Red90,
+    onError            = Red40,
 )
 
 @Composable
 fun ProyectoFinalDMSTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    // Dynamic color desactivado: usamos nuestra paleta definida
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
